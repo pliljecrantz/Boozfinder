@@ -4,9 +4,9 @@
     {
         public enum Rating
         {
-            ThumbUp,
             ThumbDown,
-            ThumbNeutral
+            ThumbNeutral,
+            ThumbUp
         }
 
         public enum Role

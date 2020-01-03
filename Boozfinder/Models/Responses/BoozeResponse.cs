@@ -6,6 +6,6 @@ namespace Boozfinder.Models.Responses
     {
         public bool Successful { get; set; }
         public string Message { get; set; }
-        public Booze Item { get; set; }        
+        public Booze Item { get; set; }
     }
 }

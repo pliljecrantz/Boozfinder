@@ -22,7 +22,7 @@ namespace Boozfinder.Controllers
 
         // POST api/v1/user
         [HttpPost]
-        public IActionResult Post([FromBody] User user)
+        public IActionResult Create([FromBody] User user)
         {
             AuthenticationResponse response;
             var created = UserProvider.CreateUser(user);
@@ -43,7 +43,7 @@ namespace Boozfinder.Controllers
                 response = new AuthenticationResponse
                 {
                     Authenticated = false,
-                    Message = "Account creation failed. Likely cause: E-mail address already exists (or system error if error persists)."
+                    Message = "Account creation failed. Likely cause: e-mail address already exists (or system error if error persists)."
                 };
                 return BadRequest(response);
             }

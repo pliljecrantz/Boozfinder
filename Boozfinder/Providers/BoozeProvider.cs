@@ -60,20 +60,20 @@ namespace Boozfinder.Providers
         /// <returns>The saved item with the auto created id</returns>
         public Booze Save(Booze booze)
         {
-            Booze item = null;
+            Booze savedItem = null;
             using (var db = new LiteDatabase(@"Boozfinder.db"))
             {
                 try
                 {
                     var boozeCollection = db.GetCollection<Booze>("booze");
-                    var id = boozeCollection.Insert(booze);
-                    item = Get(id.AsInt32);
+                    var id = boozeCollection.Insert(booze).AsInt32;
+                    savedItem = Get(id);
                 }
                 catch (Exception ex)
                 {
                     // TODO: Log error
                 }
-                return item;
+                return savedItem;
             }
         }
 
@@ -84,7 +84,7 @@ namespace Boozfinder.Providers
         /// <returns>An updated version of the item</returns>
         public Booze Update(Booze booze)
         {
-            Booze item = null;
+            Booze updatedItem = null;
             using (var db = new LiteDatabase(@"Boozfinder.db"))
             {
                 try
@@ -93,14 +93,14 @@ namespace Boozfinder.Providers
                     var updated = boozeCollection.Update(booze);
                     if (updated)
                     {
-                        item = Get(booze.Id);
+                        updatedItem = Get(booze.Id);
                     }
                 }
                 catch (Exception ex)
                 {
                     // TODO: Log error
                 }
-                return item;
+                return updatedItem;
             }
         }
 
