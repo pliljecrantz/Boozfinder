@@ -27,6 +27,7 @@ namespace Boozfinder.Controllers
             var cachedItem = CacheProvider.Get($"__Token_{token}");
             var cachedEmail = cachedItem.Split(":")[1];
             var cachedToken = cachedItem.Split(":")[0];
+
             Booze itemToUpdate;
             if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
             {
@@ -48,7 +49,6 @@ namespace Boozfinder.Controllers
                     var reviewToInsert = new Review { Email = cachedEmail, Rating = review.Rating, Text = review.Text };
                     itemToUpdate.Reviews.Add(reviewToInsert);
                     var updatedItem = BoozeProvider.Update(itemToUpdate);
-                    updatedItem = null;
                     if (updatedItem != null)
                     {
                         var response = new ReviewResponse { Successful = true, Message = "Review saved." };
