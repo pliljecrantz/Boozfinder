@@ -9,5 +9,7 @@ namespace Boozfinder.Models.Data
         public string ArticleId { get; set; }
         public IList<Review> Reviews { get; set; }
         public string Type { get; set; }
+        public string ImageData { get; set; }
+        public bool HasImage { get; set; }
     }
 }

@@ -22,7 +22,7 @@ namespace Boozfinder.Controllers
 
         // POST api/v1/user
         [HttpPost]
-        public IActionResult Create([FromBody] User user)
+        public IActionResult Post([FromBody] User user)
         {
             AuthenticationResponse response;
             var created = UserProvider.CreateUser(user);

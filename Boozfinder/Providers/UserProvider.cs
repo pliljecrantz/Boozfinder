@@ -18,9 +18,9 @@ namespace Boozfinder.Providers
         public bool CreateUser(User user)
         {
             var result = false;
-            using (var db = new LiteDatabase(@"Boozfinder.db"))
+            using (var db = new LiteDatabase(Globals.DatabaseName))
             {
-                var userCollection = db.GetCollection<User>("user");
+                var userCollection = db.GetCollection<User>(Globals.UserCollection);
                 try
                 {
                     var userExists = userCollection.FindOne(x => x.Email.Equals(user.Email));
@@ -41,9 +41,9 @@ namespace Boozfinder.Providers
         public bool HaveAdminRole(string email)
         {
             var result = false;
-            using (var db = new LiteDatabase(@"Boozfinder.db"))
+            using (var db = new LiteDatabase(Globals.DatabaseName))
             {
-                var userCollection = db.GetCollection<User>("user");
+                var userCollection = db.GetCollection<User>(Globals.UserCollection);
                 try
                 {
                     var user = userCollection.FindOne(x => x.Email.Equals(email));

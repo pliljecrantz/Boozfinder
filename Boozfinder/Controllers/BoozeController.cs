@@ -37,7 +37,7 @@ namespace Boozfinder.Controllers
 
         // POST api/v1/booze?token={token}
         [HttpPost]
-        public IActionResult Create(string token, [FromBody] Booze booze)
+        public IActionResult Post(string token, [FromBody] Booze booze)
         {
             var cachedToken = CacheProvider.Get($"__Token_{token}").Split(":")[0];
             if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
@@ -63,7 +63,7 @@ namespace Boozfinder.Controllers
 
         // PUT api/v1/booze/{id}?token={token}
         [HttpPut("{id}")]
-        public IActionResult Update(int id, string token, [FromBody] Booze booze)
+        public IActionResult Put(int id, string token, [FromBody] Booze booze)
         {
             // TODO: Implement update on item for admin role
             throw new NotImplementedException();

@@ -2,7 +2,6 @@
 using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -23,7 +22,7 @@ namespace Boozfinder.Controllers
 
         // PUT api/v1/review/{id}?token={token}
         [HttpPut("{id}")]
-        public IActionResult Create(int id, string token, [FromBody] Review review)
+        public IActionResult Put(int id, string token, [FromBody] Review review)
         {
             var cachedItem = CacheProvider.Get($"__Token_{token}");
             var cachedEmail = cachedItem.Split(":")[1];

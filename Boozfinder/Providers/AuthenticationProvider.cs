@@ -1,4 +1,5 @@
-﻿using Boozfinder.Models.Data;
+﻿using Boozfinder.Helpers;
+using Boozfinder.Models.Data;
 using Boozfinder.Providers.Interfaces;
 using LiteDB;
 using System;
@@ -18,11 +19,11 @@ namespace Boozfinder.Providers
         public bool AuthenticateUser(string email, string password)
         {
             var result = false;
-            using (var db = new LiteDatabase(@"Boozfinder.db"))
+            using (var db = new LiteDatabase(Globals.DatabaseName))
             {
                 try
                 {
-                    var userCollection = db.GetCollection<User>("user");
+                    var userCollection = db.GetCollection<User>(Globals.UserCollection);
                     var user = userCollection.Find(x => x.Email.Equals(email)).First();
                     if (user != null && user.Password.Equals(password))
                     {

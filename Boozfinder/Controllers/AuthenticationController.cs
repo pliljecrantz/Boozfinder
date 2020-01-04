@@ -22,7 +22,7 @@ namespace Boozfinder.Controllers
 
         // POST api/v1/authentication
         [HttpPost]
-        public IActionResult Authenticate([FromBody] User user)
+        public IActionResult Post([FromBody] User user)
         {
             AuthenticationResponse response;
             var authenticated = AuthenticationProvider.AuthenticateUser(user.Email, user.Password);
