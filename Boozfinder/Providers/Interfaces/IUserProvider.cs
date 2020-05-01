@@ -1,10 +1,12 @@
 ﻿using Boozfinder.Models.Data;
-using Boozfinder.Models.Responses;
+using System.Threading.Tasks;
 
 namespace Boozfinder.Providers.Interfaces
 {
     public interface IUserProvider
     {
-        bool CreateUser(User user);
+        Task<bool> SaveAsync(User user);
+        Task<bool> HasAdminRoleAsync(string email);
+        Task<bool> AuthenticateAsync(string email, string password);
     }
 }

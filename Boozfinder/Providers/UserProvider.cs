@@ -1,66 +1,46 @@
 ﻿using Boozfinder.Helpers;
 using Boozfinder.Models.Data;
 using Boozfinder.Providers.Interfaces;
-using LiteDB;
-using System;
+using Boozfinder.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace Boozfinder.Providers
 {
     public class UserProvider : IUserProvider
     {
-        public UserProvider(ICacheProvider cacheProvider)
+        private readonly ICosmosDbService _cosmosDbService;
+
+        public UserProvider(ICosmosDbService cosmosDbService)
         {
-            CacheProvider = cacheProvider;
+            _cosmosDbService = cosmosDbService;
         }
 
-        public ICacheProvider CacheProvider { get; }
-
-        public bool CreateUser(User user)
-        {
-            var result = false;
-            using (var db = new LiteDatabase(Globals.DatabaseName))
-            {
-                var userCollection = db.GetCollection<User>(Globals.UserCollection);
-                try
-                {
-                    var userExists = userCollection.FindOne(x => x.Email.Equals(user.Email));
-                    if (userExists == null)
-                    {
-                        userCollection.Insert(user);
-                        result = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // TODO: Log error
-                }
-                return result;
-            }
-        }
-
-        public bool HaveAdminRole(string email)
+        public async Task<bool> SaveAsync(User user)
         {
             var result = false;
-            using (var db = new LiteDatabase(Globals.DatabaseName))
+            var existingUser = await _cosmosDbService.GetUserAsync(user.Email);
+            if (existingUser == null)
             {
-                var userCollection = db.GetCollection<User>(Globals.UserCollection);
-                try
-                {
-                    var user = userCollection.FindOne(x => x.Email.Equals(email));
-                    if (user != null)
-                    {
-                        result = user.Role.ToLower() == Enums.Role.Admin.ToString().ToLower();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // TODO: Log error
-                }
-                return result;
+                var hashedAndSaltedPassword = HashUtility.HashPassword(user.Password);
+                user.Password = hashedAndSaltedPassword;
+                user.Role = Enums.Role.User.ToString().ToLower();
+                await _cosmosDbService.AddUserAsync(user);
+                result = true;
             }
+            return result;
         }
 
-        // TODO: Implement possibility for admins to list users and update password
-        // TODO: Implement salting and hashing of passwords before saving user to database
+        public async Task<bool> HasAdminRoleAsync(string email)
+        {
+            var user = await _cosmosDbService.GetUserAsync(email);
+            return user != null && user.Role.ToLower() == Enums.Role.Admin.ToString().ToLower();
+        }
+
+        public async Task<bool> AuthenticateAsync(string email, string password)
+        {
+            var user = await _cosmosDbService.GetUserAsync(email);
+            var verifiedPassword = HashUtility.VerifyPassword(password, user.Password);
+            return user != null && verifiedPassword;
+        }
     }
 }

@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
-using System;
-using System.Reflection;
-using System.IO;
+using Boozfinder.Services;
+using System.Threading.Tasks;
+using Microsoft.Azure.Cosmos.Fluent;
+using Microsoft.Azure.Cosmos;
+using Boozfinder.Services.Interfaces;
 
 namespace Boozfinder
 {
@@ -25,10 +27,11 @@ namespace Boozfinder
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
+            services.AddSingleton<IImageService>(InitializeImageClientInstance(Configuration.GetSection("BlobStorage")));
             services.AddMemoryCache();
-            services.AddScoped<ICacheProvider, MemoryCacheProvider>();
+            services.AddScoped<ICacheProvider, CacheProvider>();
             services.AddScoped<IUserProvider, UserProvider>();
-            services.AddScoped<IAuthenticationProvider, AuthenticationProvider>();
             services.AddScoped<IBoozeProvider, BoozeProvider>();
 
             // Register the Swagger generator, defining 1 or more Swagger documents
@@ -74,6 +77,31 @@ namespace Boozfinder
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Boozfinder API v1");
             });
+        }
+
+        /// <summary>
+        /// Creates a Cosmos DB database and a container with the specified partition key. 
+        /// </summary>
+        /// <returns></returns>
+        private static async Task<CosmosDbService> InitializeCosmosClientInstanceAsync(IConfigurationSection configurationSection)
+        {
+            string databaseName = configurationSection.GetSection("DatabaseName").Value;
+            string containerName = configurationSection.GetSection("ContainerName").Value;
+            string account = configurationSection.GetSection("Account").Value;
+            string key = configurationSection.GetSection("Key").Value;
+            CosmosClientBuilder clientBuilder = new CosmosClientBuilder(account, key);
+            CosmosClient client = clientBuilder.WithConnectionModeDirect().Build();
+            CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);
+            DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
+            await database.Database.CreateContainerIfNotExistsAsync(containerName, "/id");
+            return cosmosDbService;
+        }
+
+        private static ImageService InitializeImageClientInstance(IConfigurationSection configurationSection)
+        {
+            string connectionString = configurationSection.GetSection("ConnectionString").Value;
+            string containerName = configurationSection.GetSection("ContainerName").Value;
+            return new ImageService(connectionString, containerName);
         }
     }
 }

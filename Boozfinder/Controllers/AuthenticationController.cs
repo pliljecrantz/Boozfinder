@@ -4,6 +4,8 @@ using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Boozfinder.Controllers
 {
@@ -11,41 +13,48 @@ namespace Boozfinder.Controllers
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
-        public AuthenticationController(IAuthenticationProvider authenticationProvider, ICacheProvider cacheProvider)
-        {
-            AuthenticationProvider = authenticationProvider;
-            CacheProvider = cacheProvider;
-        }
+        private readonly IUserProvider _userProvider;
+        private readonly ICacheProvider _cacheProvider;
 
-        public IAuthenticationProvider AuthenticationProvider { get; }
-        public ICacheProvider CacheProvider { get; }
+        public AuthenticationController(IUserProvider userProvider, ICacheProvider cacheProvider)
+        {
+            _userProvider = userProvider;
+            _cacheProvider = cacheProvider;
+        }
 
         // POST api/v1/authentication
         [HttpPost]
-        public IActionResult Post([FromBody] User user)
+        public async Task<IActionResult> Post([FromBody] User user)
         {
             AuthenticationResponse response;
-            var authenticated = AuthenticationProvider.AuthenticateUser(user.Email, user.Password);
-            if (authenticated)
+            try
             {
-                response = new AuthenticationResponse
+                var authenticated = await _userProvider.AuthenticateAsync(user.Email, user.Password);
+                if (authenticated)
                 {
-                    Authenticated = true,
-                    Expires = DateTime.Now.AddMinutes(30).ToString(),
-                    Message = "Authentication succeeded.",
-                    Token = TokenGenerator.Token()
-                };
-                CacheProvider.Set(response.Token, user.Email);
-                return Ok(response);
+                    response = new AuthenticationResponse
+                    {
+                        Authenticated = true,
+                        Expires = DateTime.Now.AddMinutes(30).ToString(),
+                        Message = "Authentication succeeded.",
+                        Token = TokenGenerator.Token()
+                    };
+                    _cacheProvider.Set(response.Token, user.Email);
+                    return Ok(response);
+                }
+                else
+                {
+                    response = new AuthenticationResponse
+                    {
+                        Authenticated = false,
+                        Message = "Authentication failed. Possible causes: e-mail address does not exist in system or wrong password."
+                    };
+                    return Unauthorized(response);
+                }
             }
-            else
+            catch (Exception)
             {
-                response = new AuthenticationResponse
-                {
-                    Authenticated = false,
-                    Message = "Authentication failed."
-                };
-                return Unauthorized(response);
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
             }
         }
     }

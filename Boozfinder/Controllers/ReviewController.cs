@@ -4,6 +4,8 @@ using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Boozfinder.Controllers
 {
@@ -11,60 +13,56 @@ namespace Boozfinder.Controllers
     [ApiController]
     public class ReviewController : ControllerBase
     {
+        private readonly IBoozeProvider _boozeProvider;
+        private readonly ICacheProvider _cacheProvider;
+
         public ReviewController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider)
         {
-            BoozeProvider = boozeProvider;
-            CacheProvider = cacheProvider;
+            _boozeProvider = boozeProvider;
+            _cacheProvider = cacheProvider;
         }
-
-        public IBoozeProvider BoozeProvider { get; }
-        public ICacheProvider CacheProvider { get; }
 
         // PUT api/v1/review/{id}?token={token}
         [HttpPut("{id}")]
-        public IActionResult Put(int id, string token, [FromBody] Review review)
+        public async Task<IActionResult> Put(string id, string token, [FromBody] Review review)
         {
-            var cachedItem = CacheProvider.Get($"__Token_{token}");
+            var cachedItem = _cacheProvider.Get($"__Token_{token}");
             var cachedEmail = cachedItem.Split(":")[1];
             var cachedToken = cachedItem.Split(":")[0];
 
             Booze itemToUpdate;
             if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
             {
-                itemToUpdate = BoozeProvider.Get(id);
-                var userReviews = itemToUpdate.Reviews?.Where(x => x.Email.Equals(cachedEmail));
+                try
+                {
+                    itemToUpdate = await _boozeProvider.GetAsync(id);
+                    var reviewsFromCurrentUser = itemToUpdate.Reviews?.Where(x => x.Reviewer.Equals(cachedEmail));
 
-                if (userReviews != null && userReviews.Any())
-                {
-                    var response = new ReviewResponse { Successful = false, Message = "User has already given review." };
-                    return BadRequest(response);
-                }
-                else
-                {
-                    // If no user has given any reviews on the item we need to instansiate the review list first
-                    if (userReviews == null)
+                    if (reviewsFromCurrentUser != null && reviewsFromCurrentUser.Any())
                     {
-                        itemToUpdate.Reviews = new List<Review>();
-                    }
-                    var reviewToInsert = new Review { Email = cachedEmail, Rating = review.Rating, Text = review.Text };
-                    itemToUpdate.Reviews.Add(reviewToInsert);
-                    var updatedItem = BoozeProvider.Update(itemToUpdate);
-                    if (updatedItem != null)
-                    {
-                        var response = new ReviewResponse { Successful = true, Message = "Review saved." };
-                        return Ok(response);
+                        return Ok(new ItemResponse { Successful = false, Message = "User has already given review." });
                     }
                     else
                     {
-                        var response = new ReviewResponse { Successful = false, Message = "Review could not be saved due to system error." };
-                        return StatusCode(500, response);
+                        // If no user has given any reviews on the item we need to instansiate the review list first
+                        if (reviewsFromCurrentUser == null)
+                        {
+                            itemToUpdate.Reviews = new List<Review>();
+                        }
+                        var reviewToInsert = new Review { Reviewer = cachedEmail, Rating = review.Rating, Text = review.Text };
+                        itemToUpdate.Reviews.Add(reviewToInsert);
+                        await _boozeProvider.UpdateAsync(itemToUpdate);
+                        return Ok(new ItemResponse { Successful = true, Message = "Review saved." });
                     }
+                }
+                catch
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
                 }
             }
             else
             {
-                var response = new BoozeResponse { Successful = false, Message = "Not authorized or token has expired." };
-                return Unauthorized(response);
+                return Unauthorized(new AuthenticationResponse { Authenticated = false, Message = "Not authorized or token has expired." });
             }
         }
     }

@@ -4,6 +4,8 @@ using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Boozfinder.Controllers
 {
@@ -11,41 +13,48 @@ namespace Boozfinder.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
+        private readonly IUserProvider _userProvider;
+        private readonly ICacheProvider _cacheProvider;
+
         public UserController(IUserProvider userProvider, ICacheProvider cacheProvider)
         {
-            UserProvider = userProvider;
-            CacheProvider = cacheProvider;
+            _userProvider = userProvider;
+            _cacheProvider = cacheProvider;
         }
-
-        public IUserProvider UserProvider { get; }
-        public ICacheProvider CacheProvider { get; }
 
         // POST api/v1/user
         [HttpPost]
-        public IActionResult Post([FromBody] User user)
+        public async Task<IActionResult> Post([FromBody] User user)
         {
             AuthenticationResponse response;
-            var created = UserProvider.CreateUser(user);
-            if (created)
+            try
             {
-                response = new AuthenticationResponse
+                user.Id = $"u_{user.Email}";
+                var created = await _userProvider.SaveAsync(user);
+                if (created)
                 {
-                    Authenticated = true,
-                    Token = TokenGenerator.Token(),
-                    Message = "Account creation succeeded.",
-                    Expires = DateTime.Now.AddMinutes(30).ToString()
-                };
-                CacheProvider.Set(response.Token, user.Email);
+                    response = new AuthenticationResponse
+                    {
+                        Authenticated = true,
+                        Token = TokenGenerator.Token(),
+                        Message = "Account creation succeeded.",
+                        Expires = DateTime.Now.AddMinutes(30).ToString()
+                    };
+                    _cacheProvider.Set(response.Token, user.Email);
+                }
+                else
+                {
+                    response = new AuthenticationResponse
+                    {
+                        Authenticated = false,
+                        Message = "Account creation failed. Possible cause: e-mail address already exists in system."
+                    };
+                }
                 return Ok(response);
             }
-            else
+            catch
             {
-                response = new AuthenticationResponse
-                {
-                    Authenticated = false,
-                    Message = "Account creation failed. Likely cause: e-mail address already exists (or system error if error persists)."
-                };
-                return BadRequest(response);
+                return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
             }
         }
     }

@@ -1,12 +1,19 @@
-﻿namespace Boozfinder.Models.Data
+﻿using Newtonsoft.Json;
+
+namespace Boozfinder.Models.Data
 {
     public class User
     {
-        public int Id { get; set; }
+        [JsonProperty(PropertyName = "id")]
+        public string Id { get; set; }
+
+        [JsonProperty(PropertyName = "email")]
         public string Email { get; set; }
-        public string Name { get; set; }
+
+        [JsonProperty(PropertyName = "password")]
         public string Password { get; set; }
+
+        [JsonProperty(PropertyName = "role")]
         public string Role { get; set; }
-        public string Token { get; set; }
     }
 }
