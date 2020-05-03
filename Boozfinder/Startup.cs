@@ -9,8 +9,10 @@ using Microsoft.OpenApi.Models;
 using Boozfinder.Services;
 using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos.Fluent;
-using Microsoft.Azure.Cosmos;
 using Boozfinder.Services.Interfaces;
+using Serilog;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
 
 namespace Boozfinder
 {
@@ -19,6 +21,7 @@ namespace Boozfinder
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            InitializeLogInstance(Configuration.GetSection("LogStorage"));
         }
 
         public IConfiguration Configuration { get; }
@@ -28,7 +31,7 @@ namespace Boozfinder
         {
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
-            services.AddSingleton<IImageService>(InitializeImageClientInstance(Configuration.GetSection("BlobStorage")));
+            services.AddSingleton<IImageService>(InitializeImageClientInstance(Configuration.GetSection("ImageStorage")));
             services.AddMemoryCache();
             services.AddScoped<ICacheProvider, CacheProvider>();
             services.AddScoped<IUserProvider, UserProvider>();
@@ -40,26 +43,13 @@ namespace Boozfinder
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Version = "v1",
-                    Title = "Boozfinder API",
-                    //Description = "A simple API for Boozfinder",
-                    //TermsOfService = new Uri("https://example.com/terms"),
-                    //Contact = new OpenApiContact
-                    //{
-                    //    Name = "My name",
-                    //    Email = string.Empty,
-                    //    Url = new Uri("https://twitter.com/example"),
-                    //},
-                    //License = new OpenApiLicense
-                    //{
-                    //    Name = "Use under LICX",
-                    //    Url = new Uri("https://example.com/license"),
-                    //}
+                    Title = "Boozfinder API"
                 });
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public static void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -71,8 +61,7 @@ namespace Boozfinder
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
 
-            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.),
-            // specifying the Swagger JSON endpoint.
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.) specifying the Swagger JSON endpoint.
             app.UseSwaggerUI(c =>
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "Boozfinder API v1");
@@ -89,10 +78,10 @@ namespace Boozfinder
             string containerName = configurationSection.GetSection("ContainerName").Value;
             string account = configurationSection.GetSection("Account").Value;
             string key = configurationSection.GetSection("Key").Value;
-            CosmosClientBuilder clientBuilder = new CosmosClientBuilder(account, key);
-            CosmosClient client = clientBuilder.WithConnectionModeDirect().Build();
-            CosmosDbService cosmosDbService = new CosmosDbService(client, databaseName, containerName);
-            DatabaseResponse database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
+            var clientBuilder = new CosmosClientBuilder(account, key);
+            var client = clientBuilder.WithConnectionModeDirect().Build();
+            var cosmosDbService = new CosmosDbService(client, databaseName, containerName);
+            var database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
             await database.Database.CreateContainerIfNotExistsAsync(containerName, "/id");
             return cosmosDbService;
         }
@@ -102,6 +91,24 @@ namespace Boozfinder
             string connectionString = configurationSection.GetSection("ConnectionString").Value;
             string containerName = configurationSection.GetSection("ContainerName").Value;
             return new ImageService(connectionString, containerName);
+        }
+
+        private static void InitializeLogInstance(IConfigurationSection configurationSection)
+        {
+            var account = configurationSection.GetSection("Account").Value;
+            var key = configurationSection.GetSection("Key").Value;
+            var storageCredentials = new StorageCredentials(account, key);
+            var cloudStorageAccount = new CloudStorageAccount(storageCredentials, true);
+            var cloudBlobClient = cloudStorageAccount.CreateCloudBlobClient();
+            var container = cloudBlobClient.GetContainerReference("Logs");
+            container.CreateIfNotExistsAsync();
+
+            Log.Logger = new LoggerConfiguration()
+                    .WriteTo.AzureTableStorage(cloudStorageAccount, storageTableName: "Logs")
+                    .MinimumLevel.Information()
+                    .CreateLogger();
+
+            Log.Information("Application started.");
         }
     }
 }

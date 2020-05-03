@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Boozfinder.Models.Data;
 using Boozfinder.Services.Interfaces;
 using Microsoft.Azure.Cosmos;
+using Serilog;
 using User = Boozfinder.Models.Data.User;
 
 namespace Boozfinder.Services
@@ -30,7 +31,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in GetItemAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -48,7 +49,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in GetUserAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -72,7 +73,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in GetItemsAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -85,7 +86,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in AddItemAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -98,7 +99,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in AddUserAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -111,7 +112,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in UpdateItemAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -124,7 +125,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in UpdateUserAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -137,7 +138,7 @@ namespace Boozfinder.Services
             }
             catch (CosmosException ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in DeleteItemAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }

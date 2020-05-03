@@ -1,6 +1,7 @@
 ﻿using Boozfinder.Services.Interfaces;
 using Microsoft.Azure.Storage;
 using Microsoft.Azure.Storage.Blob;
+using Serilog;
 using System;
 using System.Threading.Tasks;
 
@@ -29,7 +30,7 @@ namespace Boozfinder.Services
             }
             catch (Exception ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in AddImageToBlobStorageAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -46,7 +47,7 @@ namespace Boozfinder.Services
             }
             catch (Exception ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in GetImageFromBlobStorageAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
@@ -61,7 +62,7 @@ namespace Boozfinder.Services
             }
             catch (Exception ex)
             {
-                // TODO: Log error
+                Log.Error($"Error in DeleteImageFromBlobStorageAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
                 throw;
             }
         }
