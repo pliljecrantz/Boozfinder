@@ -31,6 +31,7 @@ steps:
     modifyOutputPath: false
 
 - task: FileTransform@2
+  displayName: 'Replace variables'
   inputs:
     folderPath: '$(Build.ArtifactStagingDirectory)'
     xmlTransformationRules: 
@@ -44,6 +45,7 @@ steps:
     publishLocation: 'Container'
 
 - task: AzureRmWebAppDeployment@4
+  displayName: 'Deploy to Azure'
   inputs:
     ConnectionType: 'AzureRM'
     azureSubscription: 'Visual Studio Enterprise – MPN (f867c0da-9576-4745-b718-948904ec5adb)'
