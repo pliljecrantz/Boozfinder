@@ -1,0 +1,1 @@
+[![Build Status](https://dev.azure.com/pliljecrantz/Boozfinder/_apis/build/status/Boozfinder?branchName=master)](https://dev.azure.com/pliljecrantz/Boozfinder/_build/latest?definitionId=8&branchName=master)
