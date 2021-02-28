@@ -27,7 +27,7 @@ namespace Boozfinder.Controllers
             _userProvider = userProvider;
         }
 
-        // GET api/v1/booze
+        // api/v1/booze
         [HttpGet]
         public async Task<IActionResult> GetAsync()
         {
@@ -39,10 +39,10 @@ namespace Boozfinder.Controllers
             catch
             {
                 return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
-            }   
+            }
         }
 
-        // GET api/v1/booze/{id}
+        // api/v1/booze/{id}
         [HttpGet("{id}")]
         public async Task<IActionResult> GetAsync(string id)
         {
@@ -57,49 +57,48 @@ namespace Boozfinder.Controllers
             }
         }
 
-        //// POST api/v1/booze?token={token}
-        //[HttpPost]
-        //public async Task<IActionResult> PostAsync(string token, Enums.Task task, [FromBody] Booze item)
-        //{
-        //    var cachedAuth = _cacheProvider.Get($"__Token_{token}").Split(":");
-        //    var cachedToken = cachedAuth[0];
-        //    var cachedEmail = cachedAuth[1];
-        //    var isAdmin = await _userProvider.HasAdminRoleAsync(cachedEmail);
-        //    if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
-        //    {
-        //        try
-        //        {
-        //            switch (task)
-        //            {
-        //                case Enums.Task.Create:
-        //                    item.Id = Guid.NewGuid().ToString();
-        //                    await _boozeProvider.SaveAsync(item);
-        //                    break;
-        //                case Enums.Task.Update:
-        //                    // Check that token belongs to a user with admin rights or creator of the item
-        //                    if (isAdmin || item.Creator.Equals(cachedEmail))
-        //                    {
-        //                        await _boozeProvider.UpdateAsync(item);
-        //                    }
-        //                    break;
-        //                default:
-        //                    break;
-        //            }
-        //            return Ok(new ItemResponse { Successful = true, Message = "Item saved." });
-        //        }
-        //        catch
-        //        {
-        //            return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
-        //        }
-        //    }
-        //    else
-        //    {
-        //        return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
-        //    }
-        //}
+        // api/v1/booze?token={token}
+        /*[HttpPost]
+        public async Task<IActionResult> PostAsync(string token, Enums.Task task, [FromBody] Booze item)
+        {
+            var cachedAuth = _cacheProvider.Get($"__Token_{token}").Split(":");
+            var cachedToken = cachedAuth[0];
+            var cachedEmail = cachedAuth[1];
+            var isAdmin = await _userProvider.HasAdminRoleAsync(cachedEmail);
+            if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
+            {
+                try
+                {
+                    switch (task)
+                    {
+                        case Enums.Task.Create:
+                            item.Id = Guid.NewGuid().ToString();
+                            await _boozeProvider.SaveAsync(item);
+                            break;
+                        case Enums.Task.Update:
+                            // Check that token belongs to a user with admin rights or creator of the item
+                            if (isAdmin || item.Creator.Equals(cachedEmail))
+                            {
+                                await _boozeProvider.UpdateAsync(item);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    return Ok(new ItemResponse { Successful = true, Message = "Item saved." });
+                }
+                catch
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
+                }
+            }
+            else
+            {
+                return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
+            }
+        }*/
 
-        // POST api/v1/booze?token={token}
-        
+        // api/v1/booze?token={token}        
         [HttpPost]
         public async Task<IActionResult> PostAsync(string token, [FromBody] Booze item)
         {
@@ -123,7 +122,7 @@ namespace Boozfinder.Controllers
             }
         }
 
-        // POST api/v1/booze/delete?token={token}
+        // api/v1/booze/delete?token={token}
         [HttpPost]
         [Route("delete")]
         public async Task<IActionResult> DeleteAsync(string token, [FromBody] Booze item)
@@ -148,7 +147,7 @@ namespace Boozfinder.Controllers
             }
         }
 
-        // GET api/v1/booze/search?text={text}(&type={type})
+        // api/v1/booze/search?text={text}(&type={type})
         [HttpGet]
         [Route("search")]
         public async Task<IActionResult> SearchAsync(string text, string type)

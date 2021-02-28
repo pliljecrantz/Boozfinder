@@ -22,7 +22,7 @@ namespace Boozfinder.Providers
             var item = await _cosmosDbService.GetItemAsync(id);
             if (item != null)
             {
-                if (item.HasImage)
+                if (item.ImageData != null)
                 {
                     var image = await _imageService.GetImageFromBlobStorageAsync(id);
                     item.ImageData = image;
@@ -36,9 +36,9 @@ namespace Boozfinder.Providers
             var itemList = await _cosmosDbService.GetItemsAsync("SELECT * FROM c");
             foreach (var item in itemList)
             {
-                if (item.HasImage)
+                var image = await _imageService.GetImageFromBlobStorageAsync(item.Id);
+                if (image != null)
                 {
-                    var image = await _imageService.GetImageFromBlobStorageAsync(item.Id);
                     item.ImageData = image;
                 }
             }
@@ -49,7 +49,7 @@ namespace Boozfinder.Providers
         {
             if (item.ImageData != null)
             {
-                item.HasImage = true;
+                ;
                 await _imageService.AddImageToBlobStorageAsync(item.ImageData, item.Id);
                 item.ImageData = null;
             }
@@ -58,7 +58,7 @@ namespace Boozfinder.Providers
 
         public async Task UpdateAsync(Booze item)
         {
-            if (item.HasImage)
+            if (item.ImageData != null)
             {
                 // First delete the existing image
                 await _imageService.DeleteImageFromBlobStorageAsync(item.Id);
@@ -72,7 +72,7 @@ namespace Boozfinder.Providers
 
         public async Task DeleteAsync(Booze item)
         {
-            if (item.HasImage)
+            if (item.ImageData != null)
             {
                 await _imageService.DeleteImageFromBlobStorageAsync(item.Id);
             }
@@ -93,9 +93,9 @@ namespace Boozfinder.Providers
 
             foreach (var item in itemList)
             {
-                if (item.HasImage)
+                var image = await _imageService.GetImageFromBlobStorageAsync(item.Id);
+                if (image != null)
                 {
-                    var image = await _imageService.GetImageFromBlobStorageAsync(item.Id);
                     item.ImageData = image;
                 }
             }

@@ -23,9 +23,6 @@ namespace Boozfinder.Models.Data
         [JsonProperty(PropertyName = "imageData")]
         public string ImageData { get; set; }
 
-        [JsonProperty(PropertyName = "hasImage")]
-        public bool HasImage { get; set; }
-
         [JsonProperty(PropertyName = "creator")]
         public bool Creator { get; set; }
     }

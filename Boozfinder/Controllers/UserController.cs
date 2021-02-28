@@ -22,7 +22,7 @@ namespace Boozfinder.Controllers
             _cacheProvider = cacheProvider;
         }
 
-        // POST api/v1/user
+        // api/v1/user
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] User user)
         {

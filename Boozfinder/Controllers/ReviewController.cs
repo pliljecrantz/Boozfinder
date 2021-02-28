@@ -22,9 +22,9 @@ namespace Boozfinder.Controllers
             _cacheProvider = cacheProvider;
         }
 
-        // PUT api/v1/review/{id}?token={token}
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(string id, string token, [FromBody] Review review)
+        // api/v1/review/{id}?token={token}
+        [HttpPost("{id}")]
+        public async Task<IActionResult> Post(string id, string token, [FromBody] Review review)
         {
             var cachedItem = _cacheProvider.Get($"__Token_{token}");
             var cachedEmail = cachedItem.Split(":")[1];
