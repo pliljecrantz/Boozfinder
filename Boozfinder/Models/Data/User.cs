@@ -15,5 +15,8 @@ namespace Boozfinder.Models.Data
 
         [JsonProperty(PropertyName = "role")]
         public string Role { get; set; }
+
+        [JsonProperty(PropertyName = "token")]
+        public string Token { get; set; }
     }
 }

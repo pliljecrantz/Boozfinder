@@ -15,7 +15,7 @@ namespace Boozfinder.Providers
             _cosmosDbService = cosmosDbService;
         }
 
-        public async Task<bool> SaveAsync(User user)
+        public async Task<bool> CreateAsync(User user)
         {
             var result = false;
             var existingUser = await _cosmosDbService.GetUserAsync(user.Email);

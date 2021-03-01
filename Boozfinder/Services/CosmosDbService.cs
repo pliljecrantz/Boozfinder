@@ -54,6 +54,30 @@ namespace Boozfinder.Services
             }
         }
 
+        public async Task<IEnumerable<User>> GetUsersAsync()
+        {
+            try
+            {
+                var query = _container.GetItemQueryIterator<User>(new QueryDefinition("SELECT * FROM c"));
+                var results = new List<User>();
+                while (query.HasMoreResults)
+                {
+                    var response = await query.ReadNextAsync();
+                    results.AddRange(response.ToList().Where(r => r.Id.StartsWith("u_")));
+                }
+                return results;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            catch (CosmosException ex)
+            {
+                Log.Error($"Error in GetUsersAsync() - Exception message: [{ex.Message}] - StackTrace: [{ex.StackTrace}]");
+                throw;
+            }
+        }
+
         public async Task<IEnumerable<Booze>> GetItemsAsync(string queryString)
         {
             try

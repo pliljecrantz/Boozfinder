@@ -30,7 +30,7 @@ namespace Boozfinder.Controllers
             try
             {
                 user.Id = $"u_{user.Email}";
-                var created = await _userProvider.SaveAsync(user);
+                var created = await _userProvider.CreateAsync(user);
                 if (created)
                 {
                     response = new AuthenticationResponse

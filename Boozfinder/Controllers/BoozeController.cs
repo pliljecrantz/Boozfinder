@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using Boozfinder.Helpers;
 using Boozfinder.Models.Data;
 using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
@@ -57,34 +58,71 @@ namespace Boozfinder.Controllers
             }
         }
 
-        // api/v1/booze?token={token}
-        /*[HttpPost]
-        public async Task<IActionResult> PostAsync(string token, Enums.Task task, [FromBody] Booze item)
+        // api/v1/booze?token={token}&task={task}
+        [HttpPost]
+        public async Task<IActionResult> PostAsync(string token, string task, [FromBody] Booze item)
         {
             var cachedAuth = _cacheProvider.Get($"__Token_{token}").Split(":");
             var cachedToken = cachedAuth[0];
             var cachedEmail = cachedAuth[1];
             var isAdmin = await _userProvider.HasAdminRoleAsync(cachedEmail);
+            ItemResponse itemResponse = null;
+
             if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
             {
                 try
                 {
-                    switch (task)
+                    Enum.TryParse(task, out Enums.Task typeOfTask);
+                    switch (typeOfTask)
                     {
                         case Enums.Task.Create:
                             item.Id = Guid.NewGuid().ToString();
-                            await _boozeProvider.SaveAsync(item);
+                            await _boozeProvider.CreateAsync(item);
+                            itemResponse = new ItemResponse { Successful = true, Message = "Iteam created." };
                             break;
                         case Enums.Task.Update:
                             // Check that token belongs to a user with admin rights or creator of the item
                             if (isAdmin || item.Creator.Equals(cachedEmail))
                             {
                                 await _boozeProvider.UpdateAsync(item);
+                                itemResponse = new ItemResponse { Successful = true, Message = "Iteam updated." };
+                            }
+                            else
+                            {
+                                return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized to update this item." });
                             }
                             break;
                         default:
                             break;
                     }
+                    return Ok(itemResponse);
+                }
+                catch
+                {
+                    return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
+                }
+            }
+            else
+            {
+                return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
+            }
+        }
+
+        // api/v1/booze?token={token}        
+        /*[HttpPost]
+        public async Task<IActionResult> PostAsync(string token, [FromBody] Booze item)
+        {
+            //var headers = request.Headers.GetValues("Token");
+            //var token = headers.FirstOrDefault();
+
+            var cachedToken = _cacheProvider.Get($"__Token_{token}").Split(":")[0];
+
+            if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
+            {
+                try
+                {
+                    item.Id = Guid.NewGuid().ToString();
+                    await _boozeProvider.CreateAsync(item);
                     return Ok(new ItemResponse { Successful = true, Message = "Item saved." });
                 }
                 catch
@@ -98,38 +136,17 @@ namespace Boozfinder.Controllers
             }
         }*/
 
-        // api/v1/booze?token={token}        
-        [HttpPost]
-        public async Task<IActionResult> PostAsync(string token, [FromBody] Booze item)
-        {
-            var cachedToken = _cacheProvider.Get($"__Token_{token}").Split(":")[0];
-            if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
-            {
-                try
-                {
-                    item.Id = Guid.NewGuid().ToString();
-                    await _boozeProvider.SaveAsync(item);
-                    return Ok(new ItemResponse { Successful = true, Message = "Item saved." });
-                }
-                catch
-                {
-                    return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
-                }
-            }
-            else
-            {
-                return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
-            }
-        }
-
         // api/v1/booze/delete?token={token}
         [HttpPost]
         [Route("delete")]
         public async Task<IActionResult> DeleteAsync(string token, [FromBody] Booze item)
         {
             var cachedAuth = _cacheProvider.Get($"__Token_{token}").Split(":");
-            var isAdmin = await _userProvider.HasAdminRoleAsync(cachedAuth[1]);
-            if (!string.IsNullOrWhiteSpace(cachedAuth[0]) && cachedAuth[0].Equals(token) && isAdmin)
+            var cachedToken = cachedAuth[0];
+            var cachedEmail = cachedAuth[1];
+            var isAdmin = await _userProvider.HasAdminRoleAsync(cachedEmail);
+
+            if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token) && isAdmin)
             {
                 try
                 {

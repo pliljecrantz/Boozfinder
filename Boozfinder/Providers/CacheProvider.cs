@@ -21,7 +21,7 @@ namespace Boozfinder.Providers
             {
                 _cache.Remove(cacheKey);
             }
-            _cache.Set(cacheKey, cacheValue, TimeSpan.FromMinutes(30));
+            _cache.Set(cacheKey, cacheValue, TimeSpan.FromDays(1));
         }
 
         public string Get(string cacheKey)

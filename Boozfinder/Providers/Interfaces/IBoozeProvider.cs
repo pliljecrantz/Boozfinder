@@ -8,7 +8,7 @@ namespace Boozfinder.Providers.Interfaces
     {
         Task<Booze> GetAsync(string id);
         Task<IEnumerable<Booze>> GetAsync();
-        Task SaveAsync(Booze item);
+        Task CreateAsync(Booze item);
         Task UpdateAsync(Booze item);
         Task DeleteAsync(Booze item);
         Task<IEnumerable<Booze>> SearchAsync(string text, string type = "");
