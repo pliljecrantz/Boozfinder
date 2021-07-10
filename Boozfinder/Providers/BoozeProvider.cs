@@ -9,72 +9,34 @@ namespace Boozfinder.Providers
     public class BoozeProvider : IBoozeProvider
     {
         private readonly ICosmosDbService _cosmosDbService;
-        private readonly IImageService _imageService;
 
-        public BoozeProvider(ICosmosDbService cosmosDbService, IImageService imageService)
+        public BoozeProvider(ICosmosDbService cosmosDbService)
         {
             _cosmosDbService = cosmosDbService;
-            _imageService = imageService;
         }
 
         public async Task<Booze> GetAsync(string id)
         {
-            var item = await _cosmosDbService.GetItemAsync(id);
-            if (item != null)
-            {
-                //if (item.ImageData != null)
-                //{
-                //    var image = await _imageService.GetImageFromBlobStorageAsync(id);
-                //    item.ImageData = image;
-                //}
-            }
-            return item;
+            return await _cosmosDbService.GetItemAsync(id);
         }
 
         public async Task<IEnumerable<Booze>> GetAsync()
         {
-            var itemList = await _cosmosDbService.GetItemsAsync("SELECT * FROM c");
-            foreach (var item in itemList)
-            {
-                //var image = await _imageService.GetImageFromBlobStorageAsync(item.Id);
-                //if (image != null)
-                //{
-                //    item.ImageData = image;
-                //}
-            }
-            return itemList;
+            return await _cosmosDbService.GetItemsAsync("SELECT * FROM c");
         }
 
         public async Task CreateAsync(Booze item)
         {
-            //if (item.ImageData != null)
-            //{
-            //    await _imageService.AddImageToBlobStorageAsync(item.ImageData, item.Id);
-            //    item.ImageData = null;
-            //}
             await _cosmosDbService.AddItemAsync(item);
         }
 
         public async Task UpdateAsync(Booze item)
         {
-            //if (item.ImageData != null)
-            //{
-            //    // First delete the existing image
-            //    await _imageService.DeleteImageFromBlobStorageAsync(item.Id);
-
-            //    // Then save the new image
-            //    await _imageService.AddImageToBlobStorageAsync(item.ImageData, item.Id);
-            //    item.ImageData = null;
-            //}
             await _cosmosDbService.UpdateItemAsync(item.Id, item);
         }
 
         public async Task DeleteAsync(Booze item)
         {
-            //if (item.ImageData != null)
-            //{
-            //    await _imageService.DeleteImageFromBlobStorageAsync(item.Id);
-            //}
             await _cosmosDbService.DeleteItemAsync(item.Id);
         }
 
@@ -88,15 +50,6 @@ namespace Boozfinder.Providers
             else
             {
                 itemList = await _cosmosDbService.GetItemsAsync($"SELECT * FROM c WHERE name LIKE {searchTerm}");
-            }
-
-            foreach (var item in itemList)
-            {
-                var image = await _imageService.GetImageFromBlobStorageAsync(item.Id);
-                if (image != null)
-                {
-                    item.ImageData = image;
-                }
             }
 
             return itemList;

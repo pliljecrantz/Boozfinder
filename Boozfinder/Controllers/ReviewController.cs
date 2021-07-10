@@ -2,6 +2,8 @@
 using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -15,11 +17,13 @@ namespace Boozfinder.Controllers
     {
         private readonly IBoozeProvider _boozeProvider;
         private readonly ICacheProvider _cacheProvider;
+        private readonly ILogger _logger;
 
-        public ReviewController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider)
+        public ReviewController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider, ILogger logger)
         {
             _boozeProvider = boozeProvider;
             _cacheProvider = cacheProvider;
+            _logger = logger;
         }
 
         // api/v1/review/{id}?token={token}
@@ -55,13 +59,15 @@ namespace Boozfinder.Controllers
                         return Ok(new ItemResponse { Successful = true, Message = "Review saved." });
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError($"Error in ReviewController method Post - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                     return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
                 }
             }
             else
             {
+                _logger.LogInformation($"Not authorized or token has expired - User: [{cachedEmail}] - Date: [{DateTime.Now}]");
                 return Unauthorized(new AuthenticationResponse { Authenticated = false, Message = "Not authorized or token has expired." });
             }
         }

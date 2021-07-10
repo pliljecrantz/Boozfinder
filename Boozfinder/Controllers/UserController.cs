@@ -3,6 +3,7 @@ using Boozfinder.Models.Data;
 using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,11 +16,13 @@ namespace Boozfinder.Controllers
     {
         private readonly IUserProvider _userProvider;
         private readonly ICacheProvider _cacheProvider;
+        private readonly ILogger _logger;
 
-        public UserController(IUserProvider userProvider, ICacheProvider cacheProvider)
+        public UserController(IUserProvider userProvider, ICacheProvider cacheProvider, ILogger logger)
         {
             _userProvider = userProvider;
             _cacheProvider = cacheProvider;
+            _logger = logger;
         }
 
         // api/v1/user
@@ -49,11 +52,13 @@ namespace Boozfinder.Controllers
                         Authenticated = false,
                         Message = "Account creation failed. Possible cause: e-mail address already exists in system."
                     };
+                    _logger.LogInformation($"Account creation failed - User: [{user.Email}] - Date: [{DateTime.Now}]");
                 }
                 return Ok(response);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError($"Error in UserController method Post - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                 return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
             }
         }

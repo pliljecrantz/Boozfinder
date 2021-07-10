@@ -29,9 +29,8 @@ namespace Boozfinder
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddSingleton<ICosmosDbService>(InitializeCosmosClientInstanceAsync(Configuration.GetSection("CosmosDb")).GetAwaiter().GetResult());
-            services.AddSingleton<IImageService>(InitializeImageClientInstance(Configuration.GetSection("ImageStorage")));
             services.AddMemoryCache();
             services.AddScoped<ICacheProvider, CacheProvider>();
             services.AddScoped<IUserProvider, UserProvider>();
@@ -49,14 +48,15 @@ namespace Boozfinder
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public static void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public static void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (env.EnvironmentName.Equals("Development"))
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMvc();
+            app.UseRouting();
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
 
             // Enable middleware to serve generated Swagger as a JSON endpoint.
             app.UseSwagger();
@@ -84,13 +84,6 @@ namespace Boozfinder
             var database = await client.CreateDatabaseIfNotExistsAsync(databaseName);
             await database.Database.CreateContainerIfNotExistsAsync(containerName, "/id");
             return cosmosDbService;
-        }
-
-        private static ImageService InitializeImageClientInstance(IConfigurationSection configurationSection)
-        {
-            string connectionString = configurationSection.GetSection("ConnectionString").Value;
-            string containerName = configurationSection.GetSection("ContainerName").Value;
-            return new ImageService(connectionString, containerName);
         }
 
         private static void InitializeLogInstance(IConfigurationSection configurationSection)

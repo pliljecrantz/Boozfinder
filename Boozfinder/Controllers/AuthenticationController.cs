@@ -3,6 +3,7 @@ using Boozfinder.Models.Data;
 using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -15,11 +16,13 @@ namespace Boozfinder.Controllers
     {
         private readonly IUserProvider _userProvider;
         private readonly ICacheProvider _cacheProvider;
+        private readonly ILogger _logger;
 
-        public AuthenticationController(IUserProvider userProvider, ICacheProvider cacheProvider)
+        public AuthenticationController(IUserProvider userProvider, ICacheProvider cacheProvider, ILogger logger)
         {
             _userProvider = userProvider;
             _cacheProvider = cacheProvider;
+            _logger = logger;
         }
 
         // api/v1/authentication
@@ -49,11 +52,13 @@ namespace Boozfinder.Controllers
                         Authenticated = false,
                         Message = "Authentication failed. Possible causes: e-mail address does not exist in system or wrong password."
                     };
+                    _logger.LogInformation($"Authentication failed - User: [{user.Email}] - Date: [{DateTime.Now}]");
                     return Unauthorized(response);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError($"Error in AuthenticationController method Post - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                 return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
             }
         }

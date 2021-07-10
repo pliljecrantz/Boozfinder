@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Net;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Boozfinder.Helpers;
 using Boozfinder.Models.Data;
 using Boozfinder.Models.Responses;
 using Boozfinder.Providers.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using FromBodyAttribute = Microsoft.AspNetCore.Mvc.FromBodyAttribute;
 using HttpGetAttribute = Microsoft.AspNetCore.Mvc.HttpGetAttribute;
 using HttpPostAttribute = Microsoft.AspNetCore.Mvc.HttpPostAttribute;
@@ -20,12 +22,14 @@ namespace Boozfinder.Controllers
         private readonly IBoozeProvider _boozeProvider;
         private readonly ICacheProvider _cacheProvider;
         private readonly IUserProvider _userProvider;
+        private readonly ILogger _logger;
 
-        public BoozeController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider, IUserProvider userProvider)
+        public BoozeController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider, IUserProvider userProvider, ILogger logger)
         {
             _boozeProvider = boozeProvider;
             _cacheProvider = cacheProvider;
             _userProvider = userProvider;
+            _logger = logger;
         }
 
         // api/v1/booze
@@ -37,8 +41,9 @@ namespace Boozfinder.Controllers
                 var items = await _boozeProvider.GetAsync();
                 return Ok(items);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError($"Error in BoozeController method GetAsync - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                 return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
             }
         }
@@ -52,8 +57,9 @@ namespace Boozfinder.Controllers
                 var item = await _boozeProvider.GetAsync(id);
                 return Ok(item);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                _logger.LogError($"Error in BoozeController method GetAsync(string id) - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                 return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
             }
         }
@@ -89,6 +95,7 @@ namespace Boozfinder.Controllers
                             }
                             else
                             {
+                                _logger.LogInformation($"Not authorized to update this item - User: [{cachedEmail}] - Date: [{DateTime.Now}]");
                                 return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized to update this item." });
                             }
                             break;
@@ -97,13 +104,15 @@ namespace Boozfinder.Controllers
                     }
                     return Ok(itemResponse);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    _logger.LogError($"Error in BoozeController method PostAsync - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                     return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
                 }
             }
             else
             {
+                _logger.LogInformation($"Not authorized or token has expired - User: [{cachedEmail}] - Date: [{DateTime.Now}]");
                 return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
             }
         }
@@ -125,13 +134,15 @@ namespace Boozfinder.Controllers
                     await _boozeProvider.DeleteAsync(item);
                     return Ok(new ItemResponse { Successful = true, Message = "Item deleted." });
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    _logger.LogError($"Error in BoozeController method DeleteAsync - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                     return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
                 }
             }
             else
             {
+                _logger.LogInformation($"Not authorized or token has expired - User: [{cachedEmail}] - Date: [{DateTime.Now}]");
                 return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
             }
         }
@@ -146,8 +157,9 @@ namespace Boozfinder.Controllers
                 var items = await _boozeProvider.SearchAsync(text, type);
                 return Ok(items);
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError($"Error in BoozeController method SearchAsync - Stack Trace: [{ex.StackTrace}] - Message: [{ex.Message}] - Date: [{DateTime.Now}]");
                 return BadRequest(new ItemResponse { Successful = false, Message = "Server error." });
             }
         }
