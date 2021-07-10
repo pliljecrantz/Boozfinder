@@ -78,14 +78,14 @@ namespace Boozfinder.Controllers
                         case Enums.Task.Create:
                             item.Id = Guid.NewGuid().ToString();
                             await _boozeProvider.CreateAsync(item);
-                            itemResponse = new ItemResponse { Successful = true, Message = "Iteam created." };
+                            itemResponse = new ItemResponse { Successful = true, Message = "Item created." };
                             break;
                         case Enums.Task.Update:
                             // Check that token belongs to a user with admin rights or creator of the item
                             if (isAdmin || item.Creator.Equals(cachedEmail))
                             {
                                 await _boozeProvider.UpdateAsync(item);
-                                itemResponse = new ItemResponse { Successful = true, Message = "Iteam updated." };
+                                itemResponse = new ItemResponse { Successful = true, Message = "Item updated." };
                             }
                             else
                             {
@@ -107,34 +107,6 @@ namespace Boozfinder.Controllers
                 return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
             }
         }
-
-        // api/v1/booze?token={token}        
-        /*[HttpPost]
-        public async Task<IActionResult> PostAsync(string token, [FromBody] Booze item)
-        {
-            //var headers = request.Headers.GetValues("Token");
-            //var token = headers.FirstOrDefault();
-
-            var cachedToken = _cacheProvider.Get($"__Token_{token}").Split(":")[0];
-
-            if (!string.IsNullOrWhiteSpace(cachedToken) && cachedToken.Equals(token))
-            {
-                try
-                {
-                    item.Id = Guid.NewGuid().ToString();
-                    await _boozeProvider.CreateAsync(item);
-                    return Ok(new ItemResponse { Successful = true, Message = "Item saved." });
-                }
-                catch
-                {
-                    return StatusCode((int)HttpStatusCode.InternalServerError, new ItemResponse { Successful = false, Message = "A server error occured." });
-                }
-            }
-            else
-            {
-                return Unauthorized(new ItemResponse { Successful = false, Message = "Not authorized or token has expired." });
-            }
-        }*/
 
         // api/v1/booze/delete?token={token}
         [HttpPost]
