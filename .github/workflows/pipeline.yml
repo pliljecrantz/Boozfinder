@@ -17,7 +17,7 @@
 # For more information on the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
 # For more samples to get started with GitHub Action workflows to deploy to Azure: https://github.com/Azure/actions-workflow-samples
 
-name: Build and deploy ASP.Net Core app to an Azure Web App
+name: Build and deploy to boozfinder-api
 
 env:
   AZURE_WEBAPP_NAME: boozfinder-api    # set this to the name of your Azure Web App
@@ -28,8 +28,7 @@ on:
   push:
     branches:
       - master
-  workflow_dispatch:
-
+      
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -74,6 +73,26 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: .net-app
+          
+      - name: Get secrets from Azure KeyVault
+        uses: Azure/get-keyvault-secrets@v1
+        with:
+          keyvault: "boozfinder-kv"
+          secrets: 'CosmosDb-Account,CosmosDb-ContainerName,CosmosDb-DatabaseName,CosmosDb-Key,TableStorage-Account,TableStorage-Key,TableStorage-TableName'
+        id: boozfinder-secrets
+        
+      - name: Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: appsettings.json
+        env:
+          CosmosDbAccount: ${{ steps.boozfinder-secrets.outputs.CosmosDb-Account }}
+          CosmosDbKey: ${{ steps.boozfinder-secrets.outputs.CosmosDb-Key }}
+          CosmosDbDatabaseName: ${{ steps.boozfinder-secrets.outputs.CosmosDb-DatabaseName }}
+          CosmosDbContainerName: ${{ steps.boozfinder-secrets.outputs.CosmosDb-ContainerName }}
+          LogStorageAccount: ${{ steps.boozfinder-secrets.outputs.TableStorage-Account }}
+          LogStorageKey: ${{ steps.boozfinder-secrets.outputs.TableStorage-Key }}
+          LogStorageTableName: ${{ steps.boozfinder-secrets.outputs.TableStorage-TableName }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
