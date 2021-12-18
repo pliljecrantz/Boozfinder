@@ -69,7 +69,12 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - uses: Azure/get-keyvault-secrets@v1
+      - uses: Azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+      - name: Get secrets  
+        uses: Azure/get-keyvault-secrets@v1
         with:
           keyvault: "boozfinder-kv"
           secrets: 'CosmosDb-Account,CosmosDb-ContainerName,CosmosDb-DatabaseName,CosmosDb-Key,TableStorage-Account,TableStorage-Key,TableStorage-TableName'
