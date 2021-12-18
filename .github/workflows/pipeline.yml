@@ -69,17 +69,19 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v2
+      - uses: Azure/login@v1
         with:
-          name: .net-app
-          
-      - name: Get secrets from Azure KeyVault
-        uses: Azure/get-keyvault-secrets@v1
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - uses: Azure/get-keyvault-secrets@v1
         with:
           keyvault: "boozfinder-kv"
           secrets: 'CosmosDb-Account,CosmosDb-ContainerName,CosmosDb-DatabaseName,CosmosDb-Key,TableStorage-Account,TableStorage-Key,TableStorage-TableName'
         id: boozfinder-secrets
+        
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: .net-app
         
       - name: Variable Substitution
         uses: microsoft/variable-substitution@v1
