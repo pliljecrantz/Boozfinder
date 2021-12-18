@@ -18,7 +18,7 @@ namespace Boozfinder.Controllers
         private readonly ICacheProvider _cacheProvider;
         private readonly ILogger _logger;
 
-        public UserController(IUserProvider userProvider, ICacheProvider cacheProvider, ILogger logger)
+        public UserController(IUserProvider userProvider, ICacheProvider cacheProvider, ILogger<UserController> logger)
         {
             _userProvider = userProvider;
             _cacheProvider = cacheProvider;

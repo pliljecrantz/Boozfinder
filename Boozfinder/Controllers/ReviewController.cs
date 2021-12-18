@@ -19,7 +19,7 @@ namespace Boozfinder.Controllers
         private readonly ICacheProvider _cacheProvider;
         private readonly ILogger _logger;
 
-        public ReviewController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider, ILogger logger)
+        public ReviewController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider, ILogger<ReviewController> logger)
         {
             _boozeProvider = boozeProvider;
             _cacheProvider = cacheProvider;

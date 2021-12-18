@@ -24,7 +24,7 @@ namespace Boozfinder.Controllers
         private readonly IUserProvider _userProvider;
         private readonly ILogger _logger;
 
-        public BoozeController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider, IUserProvider userProvider, ILogger logger)
+        public BoozeController(IBoozeProvider boozeProvider, ICacheProvider cacheProvider, IUserProvider userProvider, ILogger<BoozeController> logger)
         {
             _boozeProvider = boozeProvider;
             _cacheProvider = cacheProvider;
