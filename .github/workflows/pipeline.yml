@@ -96,7 +96,7 @@ jobs:
           CosmosDb.ContainerName: ${{ steps.boozfinder-secrets.outputs.CosmosDb-ContainerName }}
           LogStorage.Account: ${{ steps.boozfinder-secrets.outputs.TableStorage-Account }}
           LogStorage.Key: ${{ steps.boozfinder-secrets.outputs.TableStorage-Key }}
-          LogStorage.TableName: ${{ steps.boozfinder-secrets.outputs.TableStorage-TableName }}
+          LogStorage.Name: ${{ steps.boozfinder-secrets.outputs.TableStorage-TableName }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
