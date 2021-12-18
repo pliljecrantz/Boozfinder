@@ -1,9 +1,9 @@
 name: Build and deploy to Azure
 
 env:
-  AZURE_WEBAPP_NAME: boozfinder-api    # set this to the name of your Azure Web App
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  DOTNET_VERSION: '5.0.x'                 # set this to the .NET Core version to use
+  AZURE_WEBAPP_NAME: boozfinder-api
+  AZURE_WEBAPP_PACKAGE_PATH: '.'
+  DOTNET_VERSION: '5.0.x'
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up .NET Core
+      - name: Set up .NET
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -30,10 +30,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      - name: Build with dotnet
+      - name: Build solution
         run: dotnet build --configuration Release
 
-      - name: dotnet publish
+      - name: Publish application
         run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/boozfinder
 
       - name: Upload artifact for deployment job
@@ -50,7 +50,8 @@ jobs:
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
 
     steps:
-      - uses: Azure/login@v1
+      - name: Login to Azure
+        uses: Azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
         
@@ -66,7 +67,7 @@ jobs:
         with:
           name: .net-app
         
-      - name: Variable Substitution
+      - name: Run variable substitution
         uses: microsoft/variable-substitution@v1
         with:
           files: appsettings.json
