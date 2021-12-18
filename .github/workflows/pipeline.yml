@@ -90,13 +90,13 @@ jobs:
         with:
           files: appsettings.json
         env:
-          CosmosDbAccount: ${{ steps.boozfinder-secrets.outputs.CosmosDb-Account }}
-          CosmosDbKey: ${{ steps.boozfinder-secrets.outputs.CosmosDb-Key }}
-          CosmosDbDatabaseName: ${{ steps.boozfinder-secrets.outputs.CosmosDb-DatabaseName }}
-          CosmosDbContainerName: ${{ steps.boozfinder-secrets.outputs.CosmosDb-ContainerName }}
-          LogStorageAccount: ${{ steps.boozfinder-secrets.outputs.TableStorage-Account }}
-          LogStorageKey: ${{ steps.boozfinder-secrets.outputs.TableStorage-Key }}
-          LogStorageTableName: ${{ steps.boozfinder-secrets.outputs.TableStorage-TableName }}
+          CosmosDb.Account: ${{ steps.boozfinder-secrets.outputs.CosmosDb-Account }}
+          CosmosDb.Key: ${{ steps.boozfinder-secrets.outputs.CosmosDb-Key }}
+          CosmosDb.DatabaseName: ${{ steps.boozfinder-secrets.outputs.CosmosDb-DatabaseName }}
+          CosmosDb.ContainerName: ${{ steps.boozfinder-secrets.outputs.CosmosDb-ContainerName }}
+          LogStorage.Account: ${{ steps.boozfinder-secrets.outputs.TableStorage-Account }}
+          LogStorage.Key: ${{ steps.boozfinder-secrets.outputs.TableStorage-Key }}
+          LogStorage.TableName: ${{ steps.boozfinder-secrets.outputs.TableStorage-TableName }}
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
