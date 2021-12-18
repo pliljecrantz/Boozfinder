@@ -100,7 +100,6 @@ namespace Boozfinder
                     .WriteTo.AzureTableStorage(cloudStorageAccount, storageTableName: "Logs")
                     .MinimumLevel.Information()
                     .CreateLogger();
-
             Log.Information("Application started.");
         }
     }
