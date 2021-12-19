@@ -11,7 +11,7 @@ on:
       - master
       
 jobs:
-  prepare:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -29,10 +29,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nuget-
             
-  build:
-    runs-on: ubuntu-latest
-    needs: prepare
-    steps:
       - name: Build solution
         run: dotnet build --configuration Release
 
@@ -90,3 +86,8 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+
+      - name: logout
+        run: |
+              az logout
+        if: always()
