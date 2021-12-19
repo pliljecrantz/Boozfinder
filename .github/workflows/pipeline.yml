@@ -11,9 +11,8 @@ on:
       - master
       
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v2
 
@@ -29,7 +28,11 @@ jobs:
           key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-
+            
+  build:
+    runs-on: ubuntu-latest
+    needs: prepare
+    steps:
       - name: Build solution
         run: dotnet build --configuration Release
 
